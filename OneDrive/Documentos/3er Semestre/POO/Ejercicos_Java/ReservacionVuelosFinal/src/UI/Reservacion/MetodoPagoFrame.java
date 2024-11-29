@@ -89,7 +89,7 @@ public class MetodoPagoFrame extends JFrame {
                 vuelo.reservarAsiento(asientoSeleccionado);
 
                 // Detalles adicionales
-                String aerolineaNombre = ""; // O recupera este dato de una instancia de Aerolinea
+                String aerolinea=null; // O recupera este dato de una instancia de Aerolinea
                 String reserva = "ZYSTRM"; // Generar o recibir desde lógica previa
 
                 // Abrir la ventana del boleto con todos los detalles
@@ -98,7 +98,7 @@ public class MetodoPagoFrame extends JFrame {
                     asientoSeleccionado,        // Número de asiento seleccionado
                     pago.getNombrePropietario(),// Nombre del pasajero
                     reserva,                    // Código de reserva
-                    aerolineaNombre             // Nombre de la aerolínea
+                    aerolinea            // Nombre de la aerolínea
                 );
 
                 // Cerrar ventana de método de pago

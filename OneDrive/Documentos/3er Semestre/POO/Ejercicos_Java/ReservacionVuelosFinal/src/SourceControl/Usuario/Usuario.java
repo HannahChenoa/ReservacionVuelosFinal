@@ -120,5 +120,6 @@ public abstract class Usuario {
     // Métodos abstractos
     public abstract void registrar();
 
+ // Método abstracto que debe ser implementado por las clases hijas
     public abstract boolean iniciarSesion(String email, String contraseña);
 }

@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.List;
 import SourceControl.Vuelo.Vuelo;
 
+
 public class ResumenFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -84,7 +85,6 @@ public class ResumenFrame extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
     }
-
     private JPanel createBackgroundPanel() {
         return new JPanel(new BorderLayout()) {
             private static final long serialVersionUID = 1L;

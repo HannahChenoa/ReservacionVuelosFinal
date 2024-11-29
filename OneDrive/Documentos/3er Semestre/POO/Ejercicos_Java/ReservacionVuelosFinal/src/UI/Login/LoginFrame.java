@@ -1,12 +1,13 @@
 package UI.Login;
-import UI.Bienvenida.*;
+import SourceControl.Usuario.*;
+import UI.Bienvenida.BienvenidaFrame;
+import UI.Empleado.EmpleadoFrame;
+
 import javax.swing.*;
+import java.sql.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.security.MessageDigest;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 public class LoginFrame extends JFrame {
 
@@ -43,20 +44,21 @@ public class LoginFrame extends JFrame {
         // Botón de Iniciar Sesión
         RoundedButton btnLogin = new RoundedButton("Iniciar Sesión");
         btnLogin.setBounds(100, 200, 150, 50);
-        btnLogin.addActionListener(e -> {
-            String usuario = txtUsuario.getText().trim();
-            String password = new String(txtPassword.getPassword());
+        btnLogin.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String usuario = txtUsuario.getText().trim();
+                String password = new String(txtPassword.getPassword());
 
-            if (validarCredenciales(usuario, password)) { // Verifica las credenciales
-                JOptionPane.showMessageDialog(this, "Login exitoso");
+                // Validar las credenciales
+                if (validarCredenciales(usuario, password)) {
+                    JOptionPane.showMessageDialog(LoginFrame.this, "Login exitoso");
 
-                // Abrir el frame de Bienvenida
-                new BienvenidaFrame(usuario).setVisible(true);
-
-                // Cerrar el frame de Login
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+                    // Redirigir a la ventana correspondiente
+                    // Si el usuario es un cliente, abre BienvenidaFrame
+                    // Si el usuario es un empleado, abre EmpleadoFrame
+                } else {
+                    JOptionPane.showMessageDialog(LoginFrame.this, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         backgroundPanel.add(btnLogin);
@@ -75,21 +77,58 @@ public class LoginFrame extends JFrame {
     // Método para validar las credenciales
     private boolean validarCredenciales(String usuario, String password) {
         boolean esValido = false;
+        boolean esEmpleado = false;
 
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Brownie5");
-             PreparedStatement stmt = conn.prepareStatement("SELECT contraseña FROM CLIENTE WHERE usuario = ?")) {
+        // Intentar conectar a la base de datos
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Brownie5")) {
 
-            stmt.setString(1, usuario);
-            ResultSet rs = stmt.executeQuery();
+            // Verificar si el usuario es Empleado
+            String queryEmpleado = "SELECT * FROM EMPLEADO WHERE usuario = ? AND contraseña = ?";
+            try (PreparedStatement stmtEmpleado = conn.prepareStatement(queryEmpleado)) {
+                stmtEmpleado.setString(1, usuario);
+                stmtEmpleado.setString(2, password);  // Contraseña para empleados sin hash
+                ResultSet rsEmpleado = stmtEmpleado.executeQuery();
 
-            if (rs.next()) {
-                String passwordGuardada = rs.getString("contraseña");
+                if (rsEmpleado.next()) {
+                    esValido = true;  // Credenciales correctas
+                    esEmpleado = true;  // Es un empleado
 
-                // Compara las contraseñas (puedes usar hashPassword si la contraseña está encriptada)
-                String hashedPassword = hashPassword(password); // Encripta la contraseña ingresada
-                esValido = passwordGuardada.equals(hashedPassword); // Cambia según tu esquema
+                    // Crear un objeto Empleado con datos de la base de datos
+                    String email = rsEmpleado.getString("email");
+                    String apellido = rsEmpleado.getString("apellido");
+                    String nombre = rsEmpleado.getString("nombre");
+                    
+                    Empleado empleado = new Empleado(usuario, email, password, apellido, nombre);
+                    new EmpleadoFrame(empleado).setVisible(true); // Abre la ventana de empleado
+                }
             }
-        } catch (Exception ex) {
+
+            // Si no es empleado, verificar si es cliente
+            if (!esValido) {
+                String queryCliente = "SELECT * FROM CLIENTE WHERE usuario = ? AND contraseña = ?";
+                try (PreparedStatement stmtCliente = conn.prepareStatement(queryCliente)) {
+                    stmtCliente.setString(1, usuario);
+
+                    // Encriptar la contraseña para los clientes
+                    String hashedPassword = hashPassword(password);
+                    stmtCliente.setString(2, hashedPassword);
+                    ResultSet rsCliente = stmtCliente.executeQuery();
+
+                    if (rsCliente.next()) {
+                        esValido = true;  // Credenciales correctas
+
+                        // Redirigir a la ventana de cliente
+                        new BienvenidaFrame(usuario).setVisible(true);
+                    }
+                }
+            }
+
+            // Si las credenciales son válidas, cerrar la ventana de login
+            if (esValido) {
+                dispose();  // Cierra la ventana de login
+            }
+
+        } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al conectar a la base de datos", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -97,7 +136,7 @@ public class LoginFrame extends JFrame {
         return esValido;
     }
 
-    // Método para encriptar la contraseña con SHA-256
+ // Método para encriptar la contraseña con SHA-256
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

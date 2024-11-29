@@ -37,8 +37,19 @@ public class Aerolinea {
         this.vuelos = vuelos;
     }
 
-    // Método para agregar un vuelo individual (opcional)
+    // Método para agregar un vuelo individual
     public void agregarVuelo(Vuelo vuelo) {
-        this.vuelos.add(vuelo);
+        if (!vuelos.contains(vuelo)) {  // Evita agregar vuelos duplicados
+            this.vuelos.add(vuelo);
+            vuelo.setAerolinea(this);  // Establece la aerolínea para el vuelo
+        } else {
+            System.out.println("Error: El vuelo ya está registrado en esta aerolínea.");
+        }
+    }
+
+    // Método toString para una representación más legible
+    @Override
+    public String toString() {
+        return "Aerolinea [id=" + id + ", nombre=" + nombre + ", logoPath=" + logoPath + "]";
     }
 }

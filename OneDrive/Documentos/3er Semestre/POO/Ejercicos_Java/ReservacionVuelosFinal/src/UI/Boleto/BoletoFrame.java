@@ -2,13 +2,13 @@ package UI.Boleto;
 
 import javax.swing.*;
 import java.awt.*;
-import SourceControl.Vuelo.Vuelo;
+import SourceControl.Vuelo.*;
 
 public class BoletoFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    public BoletoFrame(Vuelo vuelo, String asientoSeleccionado, String nombrePasajero, String reserva, String aerolineaNombre) {
+    public BoletoFrame(Vuelo vuelo, String asientoSeleccionado, String nombrePasajero, String reserva, String aerolinea) {
         setTitle("Boleto de Avión");
         setSize(400, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -28,7 +28,7 @@ public class BoletoFrame extends JFrame {
         // Encabezado
         JPanel headerPanel = new JPanel(new GridLayout(2, 1));
         headerPanel.setOpaque(false);
-        JLabel lblLogo = new JLabel(aerolineaNombre, SwingConstants.CENTER);
+        JLabel lblLogo = new JLabel(aerolinea, SwingConstants.CENTER);
         lblLogo.setFont(new Font("Arial", Font.BOLD, 24));
         lblLogo.setForeground(Color.WHITE);
         headerPanel.add(lblLogo);
@@ -62,7 +62,7 @@ public class BoletoFrame extends JFrame {
         additionalDetails.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         additionalDetails.add(createLabel("Reserva: " + reserva));
-        additionalDetails.add(createLabel("Aerolínea: " + aerolineaNombre));
+        additionalDetails.add(createLabel("Aerolínea: " + aerolinea));
 
         mainPanel.add(additionalDetails);
 
